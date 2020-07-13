@@ -55,6 +55,10 @@ following phases:
  provide root or admin power which is not bydefault provided.With this 
  we have to expose jenkins with its port 8080. 
  <img src="dockerfile.png">
+ 
+ 
+ 
+ 
  After creation building the dockerfile with the command 
  
     docker build -t task6:v6
