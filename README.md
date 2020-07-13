@@ -1,4 +1,4 @@
-# task6
+#  TASK OVERVIEW
 
 Perform third task with the help of Jenkins coding file
 ( called as jenkinsfile approach ) and perform the with
@@ -30,7 +30,11 @@ following phases:
            with error messages and redeploy the application after 
            code is being edited by the developer
            
-           
+ In this task we are using jenkins groovy language code 
+ for our jenkins jobs to execute
+ 
+ # Jenkins Groovy Language
+ 
  # Step 1:
  First step of the task is to create a dockerfile which has jenkins 
  installed with its yum repo configured with some required components 
@@ -50,7 +54,30 @@ following phases:
  used deployment for html only, we also use other languages
  for the same.
  
- For this we have to create PVC for storing permanent data
+Creating persistent volume fot the deployment.  
+ 
+ 
+        apiVersion: v1
+        kind: PersistentVolume
+        metadata:
+          name: html-pv
+          labels:
+            type: local
+        spec:
+          storageClassName: manual
+          capacity:
+            storage: 3Gi
+          accessModes:
+            - ReadWriteOnce
+          hostPath:
+            path: "/mnt/sdr/data/website"
+            
+ Commnd that will be used to create persistent volume:
+    
+        kubectl create -f htmlpv.yml
+ 
+ 
+we have to create PVC for storing permanent data
  
      apiVersion: v1
      kind: PersistentVolumeClaim
@@ -64,7 +91,7 @@ following phases:
          requests:
            storage: 3Gi
         
-   Creating PVC with command:
+   Command that will be used to create pvc:
      
          kubectl create -f pvc-storage.yml
          
@@ -83,6 +110,10 @@ following phases:
             targetPort: 80
             nodePort: 2424
   
+  FOR exposing the deployment we will use the command:
+  
+      kubectl create expose -f expose-html.yml
+      
   After creating pvc and service creating the deployment file:   
   
          apiVersion: apps/v1
@@ -116,7 +147,10 @@ following phases:
                    claimname: pvc-html    
                    
                    
-
+ Deployment command that will be used :
+ 
+      kubectl create -f deploy.yml
+      
  # Step 3:
    
    Now we have to create jenkins job for downloading the github code.
@@ -194,7 +228,7 @@ following phases:
         if(shell("ls /groovy | grep html")) {
 
 
-          shell("if sudo kubectl get pv server-pv-vol; then if sudo kubectl get pvc server-pv-vol-claim; then echo "volume present"; else kubectl create -f server-pv-vol-claim.yml; fi; else sudo kubectl create -f server-pv-vol.yml; sudo kubectl create -f server-pv-vol-claim.yml; fi; if sudo kubectl get deployments server-deploy; then sudo kubectl rollout restart deployment/server-deploy; sudo kubectl rollout status deployment/server-deploy; else sudo kubectl create -f web-deploy-server.yml; sudo kubectl create -f webserver_expose.yml; sudo kubectl get all; fi")       
+          shell("if sudo kubectl get pv html-pv; then if sudo kubectl get pvc  pvc-html; then echo " PVC alreaday there"; else kubectl create -f pvc-storage.yml; fi; else sudo kubectl create -f htmlpv.yml; sudo kubectl create -f pvc-storage.yml; fi; if sudo kubectl get deployments web-deployment ; then sudo kubectl rollout restart deployment/web-deployment ; sudo kubectl rollout status deployment/web-deployment; else sudo kubectl create -f deploy.yml; sudo kubectl create -f expose-html.yml; sudo kubectl get all; fi")       
 
 
       }
@@ -206,14 +240,15 @@ following phases:
  # Step 5:
  
  Then we have to check for the pods if they are running or not.
- For this we have to configure our email in jenkins. If their is any errorin the deployment this job will send an mail to the mentioned
- email.
+ For this we have to configure our email in jenkins. If their 
+ is any error in the deployment this job will send an mail to
+ the mentioned email.
  
        job("Testing") {
 
     steps {
 
-        shell('export status=$(curl -siw "%{http_code}" -o /dev/null 192.168.99.100:2424); if [ $status -eq 200 ]; then exit 0; else python3 mail.py; exit 1; fi')
+        shell('export status=$(curl -siw "%{http_code}" -o /dev/null                     192.168.99.100:2424); if [ $status -eq 200 ]; then exit 0; else python3           mail.py; exit 1; fi')
       }
     }
  
@@ -222,7 +257,8 @@ following phases:
  
  
  
- This is all about the Task
+ This is all about the Task!!
+ 
  
  
  
