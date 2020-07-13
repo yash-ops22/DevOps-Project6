@@ -34,6 +34,19 @@ following phases:
  for our jenkins jobs to execute
  
  # Jenkins Groovy Language
+ Apache Groovy is a powerful, multi-faceted language for the
+ Java platform. Jenkins-CI is the leading open source process
+ automation and integration server used by development teams
+ throughout the world. In this presentation, I discuss how Groovy 
+ (the native scripting language of Jenkins-CI) can be used throughout
+ the Jenkins ecosystem to enhance and extend Jenkins. I highlight 
+ specific examples that demonstrate how Jenkins can be used as a 
+ portal for executing Groovy scripts via a web interface and how
+ Groovy-based plugins can enhance Jenkins with rich, interactive 
+ interfaces and consistent but dynamic build reports.
+ <img src="groovy.png">
+ 
+ <img src="groovy1.png">
  
  # Step 1:
  First step of the task is to create a dockerfile which has jenkins 
