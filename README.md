@@ -43,31 +43,47 @@ following phases:
     
  Running the container image which is created after building
       
-      docker run -it -p 2401 --name OS6 task6:v6
+      docker run -it -p 2424 --name OS6 task6:v6
       
  # Step 2:
- Creating deployment for the server
+ Creating deployment for the server. In this task I have 
+ used deployment for html only, we also use other languages
+ for the same.
  
  For this we have to create PVC for storing permanent data
  
-    apiVersion: v1
-    kind: PersistentVolumeClaim
-    metadata:
-      name: pvc-storage
-    spec:
-    storageClassName: manual
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 3Gi
+     apiVersion: v1
+     kind: PersistentVolumeClaim
+     metadata:
+       name: pvc-html
+     spec:
+       storageClassName: manual
+       accessModes:
+         - ReadWriteOnce
+       resources:
+         requests:
+           storage: 3Gi
         
    Creating PVC with command:
      
          kubectl create -f pvc-storage.yml
          
+  Exposing the deployment with the service 
+    
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: expose
+      spec:
+        type: NodePort
+        selector: 
+        app: webserver
+        ports:
+          - port: 80
+            targetPort: 80
+            nodePort: 2424
   
-  After creating pvc creating the deployment file:   
+  After creating pvc and service creating the deployment file:   
   
          apiVersion: apps/v1
          kind: Deployment
@@ -98,6 +114,64 @@ following phases:
                - name: pvc-storage
                  persistentVolumeClaim:
                    claimname: pvc-html    
+                   
+                   
 
- 
+ # Step 3:
+   
+   Now we have to create jenkins job for downloading the github code.
+   This job will eheck the extension of the code and the same image 
+   will be pushed to dockerhub repository.
+   
+   We don't have to do the things directly but have to use the groovy 
+   code for this.
+   
+        job("job1-github") {
+        steps {
+        scm {
+              github("yash-ops22/task6", "master")
+            }
+        triggers {
+              scm("* * * * *")
+            }
+        shell("sudo cp -rvf * /groovy")
+        if(shell("ls /groovy/ | grep html")) {
+              dockerBuilderPublisher {
+                    dockerFileDirectory("/groovy/")
+                    cloud("docker")
+        tagsString("server:v1")
+                    pushOnSuccess(true)
+
+                    fromRegistry {
+                          url("yash-ops22")
+                          credentialsId("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
+                    }
+                    pushCredentialsId("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
+                    cleanImages(false)
+                    cleanupWithJenkinsJobDelete(false)
+                    noCache(false)
+                    pull(true)
+              }
+        }
+        else {
+              dockerBuilderPublisher {
+                    dockerFileDirectory("/groovy/")
+                    cloud("docker")
+        tagsString("web-html:v1")
+                    pushOnSuccess(true)
+
+                    fromRegistry {
+                          url("yash-ops22")
+                          credentialsId("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
+                    }
+                    pushCredentialsId("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
+                    cleanImages(false)
+                    cleanupWithJenkinsJobDelete(false)
+                    noCache(false)
+                    pull(true)
+              }
+        }
+        }
+        }
+   
  
