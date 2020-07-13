@@ -54,13 +54,26 @@ following phases:
  to run commands inside our centos container.In jenkins we have to 
  provide root or admin power which is not bydefault provided.With this 
  we have to expose jenkins with its port 8080. 
+ <img src="dockerfile.png">
  After creation building the dockerfile with the command 
  
     docker build -t task6:v6
     
- Running the container image which is created after building
+ Running the container image which is created after building and 
+ exposing it at the same time.
       
-      docker run -it -p 2424 --name OS6 task6:v6
+      docker run -it -p 2424:8080 --name OS6 task6:v6
+ 
+ Also creating a docker file  that will be dowloaded by the jenkins 
+ job for launching the language(only HTML is used here) interpreter.
+  
+         
+         FROM centos:latest
+         RUN yum install sudo -y
+         RUN yum install httpd -y
+         COPY *.html /var/www/html/
+         CMD /usr/sbin/httpd -DFOREGROUND && /dev/bash
+      
       
  # Step 2:
  Creating deployment for the server. In this task I have 
