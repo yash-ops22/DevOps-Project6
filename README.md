@@ -174,4 +174,61 @@ following phases:
         }
         }
    
+ # Step 4:
+ 
+ Next we have to create another jenkins job for the deployment of pods 
+ from the yml code.
+ 
+        job("pod-deploy") {
+
+
+      triggers {
+        upstream {
+          upstreamProjects("job1-github")
+          threshold("SUCCESS")
+        }  
+      }
+
+
+      steps {
+        if(shell("ls /groovy | grep html")) {
+
+
+          shell("if sudo kubectl get pv server-pv-vol; then if sudo kubectl get pvc server-pv-vol-claim; then echo "volume present"; else kubectl create -f server-pv-vol-claim.yml; fi; else sudo kubectl create -f server-pv-vol.yml; sudo kubectl create -f server-pv-vol-claim.yml; fi; if sudo kubectl get deployments server-deploy; then sudo kubectl rollout restart deployment/server-deploy; sudo kubectl rollout status deployment/server-deploy; else sudo kubectl create -f web-deploy-server.yml; sudo kubectl create -f webserver_expose.yml; sudo kubectl get all; fi")       
+
+
+      }
+
+        
+      }
+    }
+ 
+ # Step 5:
+ 
+ Then we have to check for the pods if they are running or not.
+ For this we have to configure our email in jenkins. If their is any errorin the deployment this job will send an mail to the mentioned
+ email.
+ 
+       job("Testing") {
+
+    steps {
+
+        shell('export status=$(curl -siw "%{http_code}" -o /dev/null 192.168.99.100:2424); if [ $status -eq 200 ]; then exit 0; else python3 mail.py; exit 1; fi')
+      }
+    }
+ 
+ 
+ After checking the mail from the jenkins we can fix them.
+ 
+ 
+ 
+ This is all about the Task
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  
