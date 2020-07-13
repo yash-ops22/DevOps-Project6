@@ -45,6 +45,59 @@ following phases:
       
       docker run -it -p 2401 --name OS6 task6:v6
       
+ # Step 2:
+ Creating deployment for the server
  
+ For this we have to create PVC for storing permanent data
+ 
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: pvc-storage
+    spec:
+    storageClassName: manual
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 3Gi
+        
+   Creating PVC with command:
+     
+         kubectl create -f pvc-storage.yml
+         
+  
+  After creating pvc creating the deployment file:   
+  
+         apiVersion: apps/v1
+         kind: Deployment
+         metadata:
+           name: web-deployment
+             labels:
+               app: web
+         spec:
+           replicas: 3
+             selector:
+               matchLabels:
+                 app: server
+             template:
+               metadata:
+                 name: web-deployment
+                 labels:
+                   app: server
+               spec:
+                 containers:
+                 - name: deployment-server
+                   image: yashu-web:v2
+                   imagePullPolicy: IfNotPresent
+            
+                 volumeMounts:
+                 - mountPath: "/var/log/httpd"
+                   name: pvc-storage
+               volumes:
+               - name: pvc-storage
+                 persistentVolumeClaim:
+                   claimname: pvc-html    
+
  
  
